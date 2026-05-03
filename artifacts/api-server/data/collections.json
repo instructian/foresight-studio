@@ -1,0 +1,25 @@
+{
+  "collections": [
+    {
+      "id": "h_cEZfSjRL",
+      "title": "AI Tutors Watchlist",
+      "description": "",
+      "visibility": "private",
+      "items": [
+        {
+          "id": "fhDapuIfwW",
+          "kind": "signal",
+          "refId": "0vVqahh172",
+          "note": "",
+          "addedBy": "Q8ElQz3Gj1",
+          "addedByName": "Amara Okonkwo",
+          "addedAt": "2026-05-03T04:17:45.481Z"
+        }
+      ],
+      "ownerId": "Q8ElQz3Gj1",
+      "ownerName": "Amara Okonkwo",
+      "createdAt": "2026-05-03T04:17:22.784Z",
+      "updatedAt": "2026-05-03T04:17:45.481Z"
+    }
+  ]
+}

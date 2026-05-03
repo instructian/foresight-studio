@@ -1,0 +1,1213 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: STEEP/PESTLE Foresight Studio API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: auth
+  - name: signals
+  - name: trends
+  - name: collections
+  - name: scenarios
+  - name: comments
+  - name: roster
+  - name: config
+  - name: analytics
+  - name: export
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+
+  # ---------- Auth ----------
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Current session user
+      responses:
+        "200":
+          description: Current user (or null if not signed in)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SessionUser" }
+  /auth/pick-name:
+    post:
+      operationId: pickName
+      tags: [auth]
+      summary: Choose a roster identity (or self-add)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PickNameBody" }
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SessionUser" }
+        "400":
+          description: Invalid
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+  /auth/instructor-login:
+    post:
+      operationId: instructorLogin
+      tags: [auth]
+      summary: Sign in as instructor with passcode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InstructorLoginBody" }
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SessionUser" }
+        "401":
+          description: Unauthorized
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: End session
+      responses:
+        "204": { description: Logged out }
+
+  # ---------- Roster ----------
+  /roster:
+    get:
+      operationId: listRoster
+      tags: [roster]
+      summary: List all roster members
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/RosterMember" }
+    post:
+      operationId: addRosterMember
+      tags: [roster]
+      summary: Add a roster member (instructor only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AddRosterMemberBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RosterMember" }
+  /roster/{id}:
+    delete:
+      operationId: removeRosterMember
+      tags: [roster]
+      summary: Remove a roster member (instructor only)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Removed }
+
+  # ---------- Config ----------
+  /config:
+    get:
+      operationId: getConfig
+      tags: [config]
+      summary: Get course config
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CourseConfig" }
+    patch:
+      operationId: updateConfig
+      tags: [config]
+      summary: Update course config (instructor only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateCourseConfigBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CourseConfig" }
+
+  # ---------- Signals ----------
+  /signals:
+    get:
+      operationId: listSignals
+      tags: [signals]
+      summary: List signals (with filters)
+      parameters:
+        - { name: q, in: query, required: false, schema: { type: string } }
+        - { name: category, in: query, required: false, schema: { type: string } }
+        - { name: novelty, in: query, required: false, schema: { type: string } }
+        - { name: timeHorizon, in: query, required: false, schema: { type: string } }
+        - { name: status, in: query, required: false, schema: { type: string } }
+        - { name: authorId, in: query, required: false, schema: { type: string } }
+        - { name: tag, in: query, required: false, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Signal" }
+    post:
+      operationId: createSignal
+      tags: [signals]
+      summary: Create a signal (draft or submitted)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateSignalBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Signal" }
+  /signals/{id}:
+    get:
+      operationId: getSignal
+      tags: [signals]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Signal" }
+        "404":
+          description: Not found
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } }
+    patch:
+      operationId: updateSignal
+      tags: [signals]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateSignalBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Signal" }
+    delete:
+      operationId: deleteSignal
+      tags: [signals]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Deleted }
+  /signals/{id}/related:
+    get:
+      operationId: getRelatedSignals
+      tags: [signals]
+      summary: Find related signals (by category + tag overlap)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Signal" }
+  /signals/{id}/sources:
+    post:
+      operationId: addSignalSource
+      tags: [signals]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateSourceBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Source" }
+  /signals/{id}/sources/{sourceId}:
+    patch:
+      operationId: updateSignalSource
+      tags: [signals]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: sourceId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateSourceBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Source" }
+    delete:
+      operationId: deleteSignalSource
+      tags: [signals]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: sourceId, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Deleted }
+
+  # ---------- Trends ----------
+  /trends:
+    get:
+      operationId: listTrends
+      tags: [trends]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Trend" }
+    post:
+      operationId: createTrend
+      tags: [trends]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateTrendBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Trend" }
+  /trends/{id}:
+    get:
+      operationId: getTrend
+      tags: [trends]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Trend" }
+    patch:
+      operationId: updateTrend
+      tags: [trends]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateTrendBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Trend" }
+
+  # ---------- Collections ----------
+  /collections:
+    get:
+      operationId: listCollections
+      tags: [collections]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Collection" }
+    post:
+      operationId: createCollection
+      tags: [collections]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateCollectionBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Collection" }
+  /collections/{id}:
+    get:
+      operationId: getCollection
+      tags: [collections]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Collection" }
+    patch:
+      operationId: updateCollection
+      tags: [collections]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateCollectionBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Collection" }
+  /collections/{id}/items:
+    post:
+      operationId: addCollectionItem
+      tags: [collections]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AddCollectionItemBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Collection" }
+  /collections/{id}/items/{itemId}:
+    delete:
+      operationId: removeCollectionItem
+      tags: [collections]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: itemId, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Removed }
+
+  # ---------- Scenarios ----------
+  /scenarios:
+    get:
+      operationId: listScenarios
+      tags: [scenarios]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Scenario" }
+    post:
+      operationId: createScenario
+      tags: [scenarios]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateScenarioBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Scenario" }
+  /scenarios/{id}:
+    get:
+      operationId: getScenario
+      tags: [scenarios]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Scenario" }
+    patch:
+      operationId: updateScenario
+      tags: [scenarios]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateScenarioBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Scenario" }
+
+  # ---------- Comments ----------
+  /comments/{entityId}:
+    get:
+      operationId: listComments
+      tags: [comments]
+      parameters:
+        - { name: entityId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Comment" }
+    post:
+      operationId: addComment
+      tags: [comments]
+      parameters:
+        - { name: entityId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AddCommentBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Comment" }
+  /comments/{entityId}/{commentId}:
+    delete:
+      operationId: deleteComment
+      tags: [comments]
+      parameters:
+        - { name: entityId, in: path, required: true, schema: { type: string } }
+        - { name: commentId, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Deleted }
+
+  # ---------- Analytics ----------
+  /analytics/participation:
+    get:
+      operationId: getParticipation
+      tags: [analytics]
+      summary: Per-student participation summary
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/StudentParticipation" }
+  /analytics/category-coverage:
+    get:
+      operationId: getCategoryCoverage
+      tags: [analytics]
+      summary: PESTLE/STEEP coverage per student
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/StudentCategoryCoverage" }
+  /analytics/dashboard-summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [analytics]
+      summary: Top-level KPIs for instructor dashboard and student home
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardSummary" }
+  /analytics/student/{id}:
+    get:
+      operationId: getStudentProfile
+      tags: [analytics]
+      summary: Full activity profile for a student
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StudentProfile" }
+  /analytics/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [analytics]
+      summary: Recent participation events across the class
+      parameters:
+        - { name: limit, in: query, required: false, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ActivityEvent" }
+
+  # ---------- Export ----------
+  /export/signals.csv:
+    get:
+      operationId: exportSignalsCsv
+      tags: [export]
+      responses:
+        "200":
+          description: CSV
+          content:
+            text/csv:
+              schema: { type: string }
+  /export/participation.csv:
+    get:
+      operationId: exportParticipationCsv
+      tags: [export]
+      responses:
+        "200":
+          description: CSV
+          content:
+            text/csv:
+              schema: { type: string }
+  /export/signals.json:
+    get:
+      operationId: exportSignalsJson
+      tags: [export]
+      responses:
+        "200":
+          description: JSON
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Signal" }
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status: { type: string }
+      required: [status]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error: { type: string }
+      required: [error]
+
+    # ----- Session / roster -----
+    SessionUser:
+      type: object
+      properties:
+        id: { type: ["string", "null"] }
+        name: { type: ["string", "null"] }
+        role:
+          type: ["string", "null"]
+          enum: ["student", "instructor", null]
+        signedIn: { type: boolean }
+      required: [signedIn]
+
+    PickNameBody:
+      type: object
+      properties:
+        rosterId: { type: ["string", "null"] }
+        newName: { type: ["string", "null"] }
+      required: []
+
+    InstructorLoginBody:
+      type: object
+      properties:
+        passcode: { type: string }
+      required: [passcode]
+
+    RosterMember:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        role:
+          type: string
+          enum: [student, instructor]
+        createdAt: { type: string, format: date-time }
+      required: [id, name, role, createdAt]
+
+    AddRosterMemberBody:
+      type: object
+      properties:
+        name: { type: string }
+        role:
+          type: string
+          enum: [student, instructor]
+      required: [name, role]
+
+    # ----- Config -----
+    CourseConfig:
+      type: object
+      properties:
+        courseTitle: { type: string }
+        assignmentTitle: { type: string }
+        assignmentDescription: { type: string }
+        dueDate: { type: ["string", "null"], format: date-time }
+        mode:
+          type: string
+          enum: [PESTLE, STEEP]
+        categories:
+          type: array
+          items: { type: string }
+        archetypes:
+          type: array
+          items: { type: string }
+        timeHorizons:
+          type: array
+          items: { type: string }
+        novelties:
+          type: array
+          items: { type: string }
+        signalTargetPerStudent: { type: integer }
+        scenarioMinSignals: { type: integer }
+        trendMinSignals: { type: integer }
+      required: [courseTitle, assignmentTitle, assignmentDescription, mode, categories, archetypes, timeHorizons, novelties, signalTargetPerStudent, scenarioMinSignals, trendMinSignals]
+
+    UpdateCourseConfigBody:
+      type: object
+      properties:
+        courseTitle: { type: string }
+        assignmentTitle: { type: string }
+        assignmentDescription: { type: string }
+        dueDate: { type: ["string", "null"], format: date-time }
+        mode:
+          type: string
+          enum: [PESTLE, STEEP]
+        signalTargetPerStudent: { type: integer }
+        scenarioMinSignals: { type: integer }
+        trendMinSignals: { type: integer }
+        instructorPasscode: { type: string }
+
+    # ----- Signal -----
+    Source:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        url: { type: string }
+        publication: { type: ["string", "null"] }
+        author: { type: ["string", "null"] }
+        publishedDate: { type: ["string", "null"] }
+        type:
+          type: string
+          enum: [news, research, report, blog, video, podcast, social, dataset, other]
+        credibilityNote: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+      required: [id, title, url, type, createdAt]
+
+    CreateSourceBody:
+      type: object
+      properties:
+        title: { type: string }
+        url: { type: string }
+        publication: { type: ["string", "null"] }
+        author: { type: ["string", "null"] }
+        publishedDate: { type: ["string", "null"] }
+        type:
+          type: string
+          enum: [news, research, report, blog, video, podcast, social, dataset, other]
+        credibilityNote: { type: ["string", "null"] }
+      required: [title, url, type]
+
+    UpdateSourceBody:
+      type: object
+      properties:
+        title: { type: string }
+        url: { type: string }
+        publication: { type: ["string", "null"] }
+        author: { type: ["string", "null"] }
+        publishedDate: { type: ["string", "null"] }
+        type:
+          type: string
+          enum: [news, research, report, blog, video, podcast, social, dataset, other]
+        credibilityNote: { type: ["string", "null"] }
+
+    Signal:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        summary: { type: string }
+        category: { type: string }
+        novelty: { type: string }
+        timeHorizon: { type: string }
+        keywords:
+          type: array
+          items: { type: string }
+        implications: { type: string }
+        context: { type: string }
+        assumptions: { type: string }
+        unknowns: { type: string }
+        ethicsEquity: { type: string }
+        leadingIndicators: { type: string }
+        strategicResponse: { type: string }
+        impactRating: { type: integer }
+        uncertaintyRating: { type: integer }
+        plausibilityRating: { type: integer }
+        status:
+          type: string
+          enum: [draft, submitted, needs_revision, archived]
+        sources:
+          type: array
+          items: { $ref: "#/components/schemas/Source" }
+        authorId: { type: string }
+        authorName: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        submittedAt: { type: ["string", "null"], format: date-time }
+      required: [id, title, summary, category, novelty, timeHorizon, keywords, implications, context, assumptions, unknowns, ethicsEquity, leadingIndicators, strategicResponse, impactRating, uncertaintyRating, plausibilityRating, status, sources, authorId, authorName, createdAt, updatedAt]
+
+    CreateSignalBody:
+      type: object
+      properties:
+        title: { type: string }
+        summary: { type: string }
+        category: { type: string }
+        novelty: { type: string }
+        timeHorizon: { type: string }
+        keywords:
+          type: array
+          items: { type: string }
+        implications: { type: string }
+        context: { type: string }
+        assumptions: { type: string }
+        unknowns: { type: string }
+        ethicsEquity: { type: string }
+        leadingIndicators: { type: string }
+        strategicResponse: { type: string }
+        impactRating: { type: integer }
+        uncertaintyRating: { type: integer }
+        plausibilityRating: { type: integer }
+        status:
+          type: string
+          enum: [draft, submitted]
+        sources:
+          type: array
+          items: { $ref: "#/components/schemas/CreateSourceBody" }
+      required: [title, category, status]
+
+    UpdateSignalBody:
+      type: object
+      properties:
+        title: { type: string }
+        summary: { type: string }
+        category: { type: string }
+        novelty: { type: string }
+        timeHorizon: { type: string }
+        keywords:
+          type: array
+          items: { type: string }
+        implications: { type: string }
+        context: { type: string }
+        assumptions: { type: string }
+        unknowns: { type: string }
+        ethicsEquity: { type: string }
+        leadingIndicators: { type: string }
+        strategicResponse: { type: string }
+        impactRating: { type: integer }
+        uncertaintyRating: { type: integer }
+        plausibilityRating: { type: integer }
+        status:
+          type: string
+          enum: [draft, submitted, needs_revision, archived]
+
+    # ----- Trend -----
+    Trend:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        claim: { type: string }
+        rationale: { type: string }
+        category: { type: string }
+        timeHorizon: { type: string }
+        confidenceRating: { type: integer }
+        impactRating: { type: integer }
+        status:
+          type: string
+          enum: [preliminary, established, contested]
+        supportingSignalIds:
+          type: array
+          items: { type: string }
+        contradictingSignalIds:
+          type: array
+          items: { type: string }
+        authorId: { type: string }
+        authorName: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, title, claim, rationale, category, timeHorizon, confidenceRating, impactRating, status, supportingSignalIds, contradictingSignalIds, authorId, authorName, createdAt, updatedAt]
+
+    CreateTrendBody:
+      type: object
+      properties:
+        title: { type: string }
+        claim: { type: string }
+        rationale: { type: string }
+        category: { type: string }
+        timeHorizon: { type: string }
+        confidenceRating: { type: integer }
+        impactRating: { type: integer }
+        supportingSignalIds:
+          type: array
+          items: { type: string }
+        contradictingSignalIds:
+          type: array
+          items: { type: string }
+      required: [title, claim, category, supportingSignalIds]
+
+    UpdateTrendBody:
+      type: object
+      properties:
+        title: { type: string }
+        claim: { type: string }
+        rationale: { type: string }
+        category: { type: string }
+        timeHorizon: { type: string }
+        confidenceRating: { type: integer }
+        impactRating: { type: integer }
+        status:
+          type: string
+          enum: [preliminary, established, contested]
+        supportingSignalIds:
+          type: array
+          items: { type: string }
+        contradictingSignalIds:
+          type: array
+          items: { type: string }
+
+    # ----- Collection -----
+    CollectionItem:
+      type: object
+      properties:
+        id: { type: string }
+        kind:
+          type: string
+          enum: [signal, trend]
+        refId: { type: string }
+        note: { type: string }
+        addedBy: { type: string }
+        addedByName: { type: string }
+        addedAt: { type: string, format: date-time }
+      required: [id, kind, refId, note, addedBy, addedByName, addedAt]
+
+    Collection:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        visibility:
+          type: string
+          enum: [private, class]
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/CollectionItem" }
+        ownerId: { type: string }
+        ownerName: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, title, description, visibility, items, ownerId, ownerName, createdAt, updatedAt]
+
+    CreateCollectionBody:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string }
+        visibility:
+          type: string
+          enum: [private, class]
+      required: [title, visibility]
+
+    UpdateCollectionBody:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string }
+        visibility:
+          type: string
+          enum: [private, class]
+
+    AddCollectionItemBody:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum: [signal, trend]
+        refId: { type: string }
+        note: { type: string }
+      required: [kind, refId]
+
+    # ----- Scenario -----
+    ProblemStatement:
+      type: object
+      properties:
+        id: { type: string }
+        text: { type: string }
+        signalIds:
+          type: array
+          items: { type: string }
+      required: [id, text, signalIds]
+
+    Persona:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        role: { type: string }
+        background: { type: string }
+        needs: { type: string }
+        problemStatementId: { type: string }
+      required: [id, name, role, background, needs, problemStatementId]
+
+    Journey:
+      type: object
+      properties:
+        id: { type: string }
+        personaId: { type: string }
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              label: { type: string }
+              detail: { type: string }
+              signalIds:
+                type: array
+                items: { type: string }
+            required: [label, detail, signalIds]
+      required: [id, personaId, steps]
+
+    SignalAnnotation:
+      type: object
+      properties:
+        signalId: { type: string }
+        role:
+          type: string
+          enum: [key_driver, uncertainty, wildcard, supporting]
+      required: [signalId, role]
+
+    Scenario:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        timeHorizon: { type: string }
+        archetype: { type: string }
+        environmentDescription: { type: string }
+        vignette: { type: string }
+        signalIds:
+          type: array
+          items: { type: string }
+        signalAnnotations:
+          type: array
+          items: { $ref: "#/components/schemas/SignalAnnotation" }
+        problemStatements:
+          type: array
+          items: { $ref: "#/components/schemas/ProblemStatement" }
+        personas:
+          type: array
+          items: { $ref: "#/components/schemas/Persona" }
+        journeys:
+          type: array
+          items: { $ref: "#/components/schemas/Journey" }
+        currentStep: { type: integer }
+        status:
+          type: string
+          enum: [draft, submitted]
+        collectionId: { type: ["string", "null"] }
+        authorId: { type: string }
+        authorName: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        submittedAt: { type: ["string", "null"], format: date-time }
+      required: [id, title, timeHorizon, archetype, environmentDescription, vignette, signalIds, signalAnnotations, problemStatements, personas, journeys, currentStep, status, authorId, authorName, createdAt, updatedAt]
+
+    CreateScenarioBody:
+      type: object
+      properties:
+        title: { type: string }
+        collectionId: { type: ["string", "null"] }
+      required: [title]
+
+    UpdateScenarioBody:
+      type: object
+      properties:
+        title: { type: string }
+        timeHorizon: { type: string }
+        archetype: { type: string }
+        environmentDescription: { type: string }
+        vignette: { type: string }
+        signalIds:
+          type: array
+          items: { type: string }
+        signalAnnotations:
+          type: array
+          items: { $ref: "#/components/schemas/SignalAnnotation" }
+        problemStatements:
+          type: array
+          items: { $ref: "#/components/schemas/ProblemStatement" }
+        personas:
+          type: array
+          items: { $ref: "#/components/schemas/Persona" }
+        journeys:
+          type: array
+          items: { $ref: "#/components/schemas/Journey" }
+        currentStep: { type: integer }
+        status:
+          type: string
+          enum: [draft, submitted]
+
+    # ----- Comment -----
+    Comment:
+      type: object
+      properties:
+        id: { type: string }
+        entityId: { type: string }
+        body: { type: string }
+        authorId: { type: string }
+        authorName: { type: string }
+        authorRole:
+          type: string
+          enum: [student, instructor]
+        createdAt: { type: string, format: date-time }
+      required: [id, entityId, body, authorId, authorName, authorRole, createdAt]
+
+    AddCommentBody:
+      type: object
+      properties:
+        body: { type: string }
+      required: [body]
+
+    # ----- Analytics -----
+    StudentParticipation:
+      type: object
+      properties:
+        studentId: { type: string }
+        studentName: { type: string }
+        signalsTotal: { type: integer }
+        signalsSubmitted: { type: integer }
+        signalsDraft: { type: integer }
+        trendsCount: { type: integer }
+        collectionsCount: { type: integer }
+        scenariosCount: { type: integer }
+        scenariosSubmitted: { type: integer }
+        commentsCount: { type: integer }
+        lastActiveAt: { type: ["string", "null"], format: date-time }
+        atRisk: { type: boolean }
+      required: [studentId, studentName, signalsTotal, signalsSubmitted, signalsDraft, trendsCount, collectionsCount, scenariosCount, scenariosSubmitted, commentsCount, atRisk]
+
+    StudentCategoryCoverage:
+      type: object
+      properties:
+        studentId: { type: string }
+        studentName: { type: string }
+        counts:
+          type: object
+          additionalProperties: { type: integer }
+        total: { type: integer }
+      required: [studentId, studentName, counts, total]
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalSignals: { type: integer }
+        submittedSignals: { type: integer }
+        totalTrends: { type: integer }
+        totalCollections: { type: integer }
+        totalScenarios: { type: integer }
+        submittedScenarios: { type: integer }
+        activeStudents: { type: integer }
+        atRiskStudents: { type: integer }
+        averageSignalsPerStudent: { type: number }
+        categoryDistribution:
+          type: object
+          additionalProperties: { type: integer }
+      required: [totalSignals, submittedSignals, totalTrends, totalCollections, totalScenarios, submittedScenarios, activeStudents, atRiskStudents, averageSignalsPerStudent, categoryDistribution]
+
+    StudentProfile:
+      type: object
+      properties:
+        student: { $ref: "#/components/schemas/RosterMember" }
+        participation: { $ref: "#/components/schemas/StudentParticipation" }
+        signals:
+          type: array
+          items: { $ref: "#/components/schemas/Signal" }
+        trends:
+          type: array
+          items: { $ref: "#/components/schemas/Trend" }
+        collections:
+          type: array
+          items: { $ref: "#/components/schemas/Collection" }
+        scenarios:
+          type: array
+          items: { $ref: "#/components/schemas/Scenario" }
+        timeline:
+          type: array
+          items: { $ref: "#/components/schemas/ActivityEvent" }
+      required: [student, participation, signals, trends, collections, scenarios, timeline]
+
+    ActivityEvent:
+      type: object
+      properties:
+        id: { type: string }
+        actorId: { type: string }
+        actorName: { type: string }
+        type: { type: string }
+        entityKind: { type: string }
+        entityId: { type: string }
+        entityTitle: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+      required: [id, actorId, actorName, type, entityKind, entityId, createdAt]

@@ -1,0 +1,30 @@
+{
+  "signals": [
+    {
+      "id": "0vVqahh172",
+      "title": "AI tutors enter community college classrooms",
+      "summary": "Several CC districts piloted AI tutoring this semester.",
+      "category": "Technological",
+      "novelty": "emerging",
+      "timeHorizon": "2-5y",
+      "keywords": [],
+      "implications": "",
+      "context": "",
+      "assumptions": "",
+      "unknowns": "",
+      "ethicsEquity": "",
+      "leadingIndicators": "",
+      "strategicResponse": "",
+      "impactRating": 3,
+      "uncertaintyRating": 3,
+      "plausibilityRating": 3,
+      "status": "draft",
+      "sources": [],
+      "authorId": "Q8ElQz3Gj1",
+      "authorName": "Amara Okonkwo",
+      "createdAt": "2026-05-03T04:16:26.289Z",
+      "updatedAt": "2026-05-03T04:16:26.289Z",
+      "submittedAt": null
+    }
+  ]
+}

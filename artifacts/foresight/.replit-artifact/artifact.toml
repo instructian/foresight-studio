@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Foresight Studio"
+version = "1.0.0"
+id = "artifacts/foresight"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25577
+
+[services.development]
+run = "pnpm --filter @workspace/foresight run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/foresight", "run", "build" ]
+publicDir = "artifacts/foresight/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25577"
+BASE_PATH = "/"

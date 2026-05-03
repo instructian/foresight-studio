@@ -1,0 +1,60 @@
+{
+  "members": [
+    {
+      "id": "KrjkJ4SaFz",
+      "name": "Prof. Devereaux",
+      "role": "instructor",
+      "createdAt": "2026-05-03T04:14:50.966Z"
+    },
+    {
+      "id": "Q8ElQz3Gj1",
+      "name": "Amara Okonkwo",
+      "role": "student",
+      "createdAt": "2026-05-03T04:14:50.966Z"
+    },
+    {
+      "id": "Pxnuf-3qBP",
+      "name": "Liang Chen",
+      "role": "student",
+      "createdAt": "2026-05-03T04:14:50.966Z"
+    },
+    {
+      "id": "FmX1XHYSZ8",
+      "name": "Priya Raman",
+      "role": "student",
+      "createdAt": "2026-05-03T04:14:50.966Z"
+    },
+    {
+      "id": "Y2LYufiMqE",
+      "name": "Mateo Alvarez",
+      "role": "student",
+      "createdAt": "2026-05-03T04:14:50.966Z"
+    },
+    {
+      "id": "R5-tQMPw6J",
+      "name": "Noor Haddad",
+      "role": "student",
+      "createdAt": "2026-05-03T04:14:50.966Z"
+    },
+    {
+      "id": "8e14iDt9Sb",
+      "name": "Rin Takeda",
+      "role": "student",
+      "createdAt": "2026-05-03T04:14:50.966Z"
+    },
+    {
+      "id": "J9j7HldSTy",
+      "name": "Theo Larsson",
+      "role": "student",
+      "createdAt": "2026-05-03T04:14:50.966Z"
+    },
+    {
+      "id": "_TRPNOjoAu",
+      "name": "Zoë Bennett",
+      "role": "student",
+      "createdAt": "2026-05-03T04:14:50.966Z"
+    }
+  ],
+  "instructorPasscodeHash": "23c60585ef85bbfa30dc84c5f7497842b9939991491fc9e67ee899d493083e7a38b4f570d6d43f548d19368d29a8f8207c353afaa4ba805278baf9c142ab89a0",
+  "instructorPasscodeSalt": "77c197e292abfd05639f3c5ce6721fe0"
+}

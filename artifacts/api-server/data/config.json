@@ -1,0 +1,37 @@
+{
+  "courseTitle": "DES 740 — Speculative Design",
+  "assignmentTitle": "Foresight Studio: Signals → Scenarios",
+  "assignmentDescription": "Throughout the semester, collect signals of change from credible sources, cluster them into emerging trends, share collections with classmates, and compose evidence-grounded future scenarios. Every claim must trace back to a signal; every signal must trace back to a source.",
+  "dueDate": null,
+  "mode": "PESTLE",
+  "categories": [
+    "Political",
+    "Economic",
+    "Social",
+    "Technological",
+    "Legal",
+    "Environmental"
+  ],
+  "archetypes": [
+    "Continuation",
+    "New Equilibrium",
+    "Collapse",
+    "Transformation"
+  ],
+  "timeHorizons": [
+    "0-2y",
+    "2-5y",
+    "5-10y",
+    "10-25y"
+  ],
+  "novelties": [
+    "weak",
+    "emerging",
+    "accelerating",
+    "plateauing",
+    "declining"
+  ],
+  "signalTargetPerStudent": 12,
+  "scenarioMinSignals": 5,
+  "trendMinSignals": 3
+}

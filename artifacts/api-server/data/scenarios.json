@@ -1,0 +1,25 @@
+{
+  "scenarios": [
+    {
+      "id": "ESSLG7P0rz",
+      "title": "AI Tutors and the Future of Community College",
+      "timeHorizon": "5-10y",
+      "archetype": "Continuation",
+      "environmentDescription": "",
+      "vignette": "",
+      "signalIds": [],
+      "signalAnnotations": [],
+      "problemStatements": [],
+      "personas": [],
+      "journeys": [],
+      "currentStep": 1,
+      "status": "draft",
+      "collectionId": null,
+      "authorId": "Q8ElQz3Gj1",
+      "authorName": "Amara Okonkwo",
+      "createdAt": "2026-05-03T04:18:08.800Z",
+      "updatedAt": "2026-05-03T04:18:13.406Z",
+      "submittedAt": null
+    }
+  ]
+}
